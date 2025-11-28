@@ -46,6 +46,20 @@ const clienteModel = {
       connection.rollback()
     }
   },
+
+  buscarPorCpf: async (pCpf) => {
+    const sql = 'SELECT * FROM clientes WHERE cpf=?;';
+    const values = [pCpf];
+    const [rows] = await pool.query(sql, values);
+    return rows[0];
+  },
+
+  buscarPorEmail: async (pEmail) => {
+    const sql = 'SELECT * FROM clientes WHERE email=?;';
+    const values = [pEmail];
+    const [rows] = await pool.query(sql, values);
+    return rows[0];
+  },
 }
 
 module.exports = { clienteModel };
