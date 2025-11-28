@@ -3,14 +3,15 @@ const { pool } = require('../config/db');
 const clienteModel = {
 
 /**
-   * Insere os produtos na base de dados
+   * Insere os clientes na base de dados
    * @async
-   * @function insert
-   * @param {string} pNomeProd Descrição do nome do produto que deve ser inserido no BDDS. Ex: 'Teclado'
-   * @param {number} pValorProd Valor do produto que será inserido no BDDS. Ex.: 199.90
+   * @function insertCliente
+   * @param {string} pNome Descrição do nome do cliente que deve ser inserido no BDDS.
+   * @param {number} pCpf CPF do cliente que vai ser inserido no BDDS.
+   * @param {string} pEmail E-mail do cliente que será inserido no BDDS.
    * @returns {Promise<Object} Retorna um objeto contendo propriedades sobre o resultado da execução da query.
    * @example 
-   * const result = await produtoModel.insert(paramA, paramB);
+   * const result = await clienteModel.insertCliente(paramA, paramB, paramC);
    *  "result": {
    * "fieldCount": 0,
      *      "affectedRows": 1,
@@ -21,9 +22,9 @@ const clienteModel = {
      *      "changedRows": 0
      * } 
     */
-  insertCliente: async (pNomeProd, pValorProd) => {
-    const sql = 'INSERT INTO produtos (nome_produto, valor) VALUES (?,?);';
-    const values = [pNomeProd, pValorProd]
+  insertCliente: async (pNome, pCpf, pEmail) => {
+    const sql = 'INSERT INTO produtos (nome, cpf, email) VALUES (?,?,?);';
+    const values = [pNome, pCpf, pEmail]
     const [rows] = await pool.query(sql, values);
     return rows;
   }
