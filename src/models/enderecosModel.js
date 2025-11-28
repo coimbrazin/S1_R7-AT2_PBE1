@@ -3,7 +3,7 @@ const { pool } = require('../config/db');
 const enderecosModel = {
 
   /**
-     * Insere os clientes na base de dados
+     * Insere o Endereço na base de dados
      * @async
      * @function insertEndereco
      * @param {int} pIdCliente Id do Cliente - Na tabela de Clientes
@@ -27,30 +27,39 @@ const enderecosModel = {
        *      "changedRows": 0
        * } 
       */
-  insertCliente: async (pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
+  selectAll: async () => {
+    const sql = 'SELECT * FROM enderecos;';
+    const [rows] = await pool.query(sql);
+    return rows;
+  },
+  insertEndereco: async (pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
     const connection = await pool.getConnection();
 
     try {
       await connection.beginTransaction();
 
-      const sqlEndereco = 'INSERT INTO clientes (nome, cpf, email) VALUES (?,?,?);';
-      const valuesCliente = [pNome, pCpf, pEmail];
-      const [rowsCliente] = await pool.query(sqlCliente, valuesCliente);
-
-      const sqlTelefone = 'INSERT INTO telefones (id_cliente, telefone) VALUES (?,?);';
-      const valuesTelefone = [pIdCliente, pTelefone];
-      const [rowsTelefone] = await pool.query(sqlTelefone, valuesTelefone);
-
-      const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?)';
+      const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?);';
       const valuesEndereco = [pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
       const [rowsEndereco] = await pool.query(sqlEndereco, valuesEndereco);
 
       connection.commit();
-      return { rowsCliente, rowsTelefone, rowsEndereco };
+      return rowsEndereco;
     } catch (error) {
       connection.rollback()
     }
+
+  },
+  updateEndereco: async (pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
+    const sql = 'UPDATE endereco cep=?, uf=?, cidade=?, bairro=?, logradouro=?, numero=?, complemento=? WHERE id_cliente=?;';
+    const values = [pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento, pIdCliente]
+    const [rows] = await pool.query(sql, values);
+  },
+  deleteEnderecoCliente: async (pIdCliente) => {
+    const sql = 'DELETE FROM endereco WHERE id_cliente = ?;';
+    const values = [pIdCliente];
+    const [rows] = await pool.query(sql, values);
+    return rows;
   }
 }
 
-module.exports = { clienteModel };
+module.exports = { enderecosModel };
