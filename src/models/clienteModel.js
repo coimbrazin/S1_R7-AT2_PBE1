@@ -42,17 +42,14 @@ const clienteModel = {
       const valuesCliente = [pNome, pCpf, pEmail];
       const [rowsCliente] = await connection.query(sqlCliente, valuesCliente);
 
-      const idCliente = result.insertId;
-
-
       const sqlTelefone = 'INSERT INTO telefones (id_cliente, telefone) VALUES (?,?);';
-      for ( tel of pTelefone) {
-        const valuesTelefone = [idCliente, tel];
+      for (let tel of pTelefone) {
+        const valuesTelefone = [result.insertId, tel];
         await connection.query(sqlTelefone, valuesTelefone);
       }
 
       const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?)';
-      const valuesEndereco = [idCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
+      const valuesEndereco = [result.insertId, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
       const [rowsEndereco] = await connection.query(sqlEndereco, valuesEndereco);
 
       connection.commit();
