@@ -6,9 +6,19 @@ const clienteModel = {
      * Insere os clientes na base de dados
      * @async
      * @function insertCliente
+     * @param {number} pIdCliente Usado para identificar qual cliente e o detentor daquele telefone e endereco no BDDS.
      * @param {string} pNome Descrição do nome do cliente que deve ser inserido no BDDS.
      * @param {number} pCpf CPF do cliente que vai ser inserido no BDDS.
      * @param {string} pEmail E-mail do cliente que será inserido no BDDS.
+     * @param {string} pTelefone Telefone do cliente que será inserido no BDDS.
+     * @param {string} pCep CEP utilizado para puxar o endereco do cliente usando VIACEP
+     * @param {string} pUf Preenchida a partir do retorno do VIACEP
+     * @param {string} pCidade Preenchida a partir do retorno do VIACEP
+     * @param {string} pBairro Preenchida a partir do retorno do VIACEP
+     * @param {string} pLogradouro Preenchida a partir do retorno do VIACEP
+     * @param {string} pNumero Número da casa do cliente
+     * @param {string} pComplemento Complemento para identificar a casa do cliente
+     * @param 
      * @returns {Promise<Object} Retorna um objeto contendo propriedades sobre o resultado da execução da query.
      * @example 
      * const result = await clienteModel.insertCliente(paramA, paramB, paramC);
@@ -22,7 +32,7 @@ const clienteModel = {
        *      "changedRows": 0
        * } 
       */
-  insertCliente: async (pIdCliente, pNome, pCpf, pEmail, pTelefone, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
+  insertCliente: async (pNome, pCpf, pEmail, pTelefone, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
     const connection = await pool.getConnection();
 
     try {
@@ -30,20 +40,27 @@ const clienteModel = {
 
       const sqlCliente = 'INSERT INTO clientes (nome, cpf, email) VALUES (?,?,?);';
       const valuesCliente = [pNome, pCpf, pEmail];
-      const [rowsCliente] = await pool.query(sqlCliente, valuesCliente);
+      const [rowsCliente] = await connection.query(sqlCliente, valuesCliente);
+
+      const idCliente = result.insertId;
+
 
       const sqlTelefone = 'INSERT INTO telefones (id_cliente, telefone) VALUES (?,?);';
-      const valuesTelefone = [pIdCliente, pTelefone];
-      const [rowsTelefone] = await pool.query(sqlTelefone, valuesTelefone);
+      for ( tel of pTelefone) {
+        const valuesTelefone = [idCliente, tel];
+        await connection.query(sqlTelefone, valuesTelefone);
+      }
 
       const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?)';
-      const valuesEndereco = [pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
-      const [rowsEndereco] = await pool.query(sqlEndereco, valuesEndereco);
+      const valuesEndereco = [idCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
+      const [rowsEndereco] = await connection.query(sqlEndereco, valuesEndereco);
 
       connection.commit();
       return { rowsCliente, rowsTelefone, rowsEndereco };
     } catch (error) {
       connection.rollback()
+      throw error;
+      
     }
   },
 
@@ -60,6 +77,8 @@ const clienteModel = {
     const [rows] = await pool.query(sql, values);
     return rows[0];
   },
+
+
 }
 
 module.exports = { clienteModel };

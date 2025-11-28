@@ -4,7 +4,7 @@ const clienteController = {
 
   novoCliente: async (req, res) => {
     try {
-      const { nome, cpf, email } = req.body;
+      const { nome, cpf, email, telefone, cep, numero, complemento } = req.body;
 
       if (!nome || !cpf || !email || !isNaN(nome) || !isNaN(email)) {
         return res.status(400).json({ message: 'Verifique os dados enviados e tente novamente' });
@@ -22,8 +22,12 @@ const clienteController = {
 
       // Verifica Email
       const verificaEmail = await clienteModel.buscarPorEmail(email)
+      if (verificaEmail) {
+        return res.status(200).json({ message: 'O E-mail informado já existe no banco de dados.' })
+      }
+
       if (!email.includes('@')) {
-        return res.status(200).json({ message: 'O e-mail enviado é inválido' });
+        return res.status(200).json({ message: 'O e-mail enviado é inválido.' });
       }
 
       const resultado = await clienteModel.insertCliente(nome, cpf, email);
