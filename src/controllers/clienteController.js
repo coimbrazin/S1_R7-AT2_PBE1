@@ -1,7 +1,14 @@
 const { clienteModel } = require('../models/clienteModel');
 
 const clienteController = {
-
+  /**
+   * Insere um novo cliente no banco de dados
+   * Rota GET /clientes/
+   * @async
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Array<Object} Objeto contendo o resultado da consulta
+   */
   novoCliente: async (req, res) => {
     try {
       const { nome, cpf, email, telefone, cep, numero, complemento } = req.body;
@@ -32,7 +39,17 @@ const clienteController = {
 
       const url = `https://viacep.com.br/ws/${cep}/json/`
 
-      
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        return res.status(400).json({ message: 'Erro ao consultar o ViaCEP' })
+      }
+
+      const viaCepData = await response.json()
+
+      if (viaCepData.erro) {
+        return res.status(400).json({ message: "CEP inválido." });
+      }
 
       const resultado = await clienteModel.insertCliente(
         nome,
