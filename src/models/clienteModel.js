@@ -45,7 +45,7 @@ const clienteModel = {
     } catch (error) {
       connection.rollback()
     }
-  }
+  },
 }
 
 module.exports = { clienteModel };
