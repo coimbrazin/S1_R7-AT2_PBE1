@@ -1,6 +1,33 @@
 const { clienteModel } = require('../models/clienteModel');
+const { buscarCep } = require('../utils/viacep');
 
 const clienteController = {
+
+  selecionaTodosClientes: async (req, res) => {
+    try {
+      const { idCliente } = req.query;
+      let resultado;
+      if (idCliente) {
+        resultado = await clienteModel.selectByCliente(idCliente);
+        if (resultado.length === 0) {
+          return res.status(200).json({ message: 'Não a dados com o ID pesquisado' })
+        }
+        return res.status(200).json({ message: 'Dados da tabela clientes', data: resultado })
+      }
+      resultado = await clienteModel.selectAllClientes();
+      if (resultado.length === 0) {
+        return res.status(200).json({ message: 'A consulta não retornou resultados' });
+      }
+      res.status(200).json({ message: 'Dados da tabela clientes', data: resultado })
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: 'Ocorreu um erro no servidor',
+        errorMessage: error.message
+      });
+    }
+  },
+
   /**
    * Insere um novo cliente no banco de dados
    * Rota GET /clientes/
@@ -13,9 +40,14 @@ const clienteController = {
     try {
       const { nome, cpf, email, telefone, cep, numero, complemento } = req.body;
 
-      if (!nome || !cpf || !email || !telefone || !cep || !numero || !complemento || !isNaN(nome) || !isNaN(email) || isNaN(cpf) || isNaN(telefone) || isNaN(cep) || isNaN(numero)) {
+      if (
+        !nome || !cpf || !email || !telefone || !cep || !numero || !complemento ||
+
+        typeof nome !== "string" || typeof cpf !== "string" || typeof email !== "string" || typeof cep !== "string" || typeof numero !== "string" || typeof complemento !== "string"
+      ) {
         return res.status(400).json({ message: 'Verifique os dados enviados e tente novamente' });
       }
+
 
       // Verifica CPF
       if (isNaN(cpf) || cpf.length != 11) {
@@ -37,18 +69,14 @@ const clienteController = {
         return res.status(200).json({ message: 'O e-mail enviado é inválido.' });
       }
 
-      const url = `https://viacep.com.br/ws/${cep}/json/`
-
-      const response = await fetch(url)
-
-      if (!response.ok) {
-        return res.status(400).json({ message: 'Erro ao consultar o ViaCEP' })
+      if (!Array.isArray(telefone)) {
+        return res.status(400).json({ message: 'O campo "telefone" deve ser um array.' });
       }
 
-      const viaCepData = await response.json()
+      const viaCepData = await buscarCep(cep);
 
-      if (viaCepData.erro) {
-        return res.status(400).json({ message: "CEP inválido." });
+      if (!viaCepData) {
+        return res.status(400).json({ message: 'CEP inválido ou não encontrado.' });
       }
 
       const resultado = await clienteModel.insertCliente(
@@ -57,16 +85,10 @@ const clienteController = {
         email,
         telefone,
         cep,
-        uf,
-        cidade,
-        bairro,
-        logradouro,
         numero,
-        complemento
+        complemento,
+        viaCepData
       );
-      if (resultado.insertId === 0) {
-        throw new Error("Ocorreu um erro ao incluir o cliente");
-      }
 
       res.status(201).json({ message: 'Registro incluido com sucesso', data: resultado });
 
