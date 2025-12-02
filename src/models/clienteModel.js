@@ -63,12 +63,11 @@ const clienteModel = {
       const [rowsCliente] = await connection.query(sqlCliente, valuesCliente);
 
       const sqlTelefone = 'INSERT INTO telefones (id_cliente, telefone) VALUES (?,?);';
-      let rowsTelefone = [];
-
+      const rowsTelefone = [];
       for (let tel of pTelefone) {
         const valuesTelefone = [rowsCliente.insertId, tel];
-        const [rowTel] = await connection.query(sqlTelefone, valuesTelefone);
-        rowsTelefone.push(rowTel);
+        const [rowsTel] = await connection.query(sqlTelefone, valuesTelefone);
+        rowsTelefone.push(rowsTel);
       }
 
       const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?)';
@@ -139,7 +138,7 @@ const clienteModel = {
    * const result = await clienteModel.updateCliente(3, "João", "123...", "email@gmail.com");
    */
   updateCliente: async (pId, pNome, pCpf, pEmail) => {
-    const sql = 'UPDATE clientes SET nome=?, cpf=?, email=? WHERE id=?;';
+    const sql = 'UPDATE clientes SET nome=?, cpf=?, email=? WHERE id_cliente=?;';
     const values = [pNome, pCpf, pEmail, pId];
     const [rows] = await pool.query(sql, values);
     return rows;
@@ -155,11 +154,31 @@ const clienteModel = {
    * const result = await clienteModel.deleteCliente(2);
    */
   deleteCliente: async (pId) => {
-    const sql = 'DELETE FROM clientes WHERE id=?;';
-    const values = [pId];
-    const [rows] = await pool.query(sql, values);
-    return rows;
+    const connection = await pool.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const sqlTelefone = 'DELETE FROM telefones WHERE id_cliente=?;';
+      const valuesTelefone = [pId]
+      const [rowsTelefone] = await connection.query(sqlTelefone, valuesTelefone);
+
+      const sqlEndereco = 'DELETE FROM enderecos WHERE id_cliente=?;';
+      const valuesEndereco = [pId];
+      const [rowsEndereco] = await connection.query(sqlEndereco, valuesEndereco);
+
+      const sqlCliente = 'DELETE FROM clientes WHERE id_cliente=?;';
+      const valuesCliente = [pId];
+      const [rowsCliente] = await connection.query(sqlCliente, valuesCliente);
+
+      await connection.commit();
+      return { rowsCliente, rowsTelefone, rowsEndereco };
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    }
   }
-};
+}
 
 module.exports = { clienteModel };

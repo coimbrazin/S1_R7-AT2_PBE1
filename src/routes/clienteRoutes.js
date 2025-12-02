@@ -4,7 +4,7 @@ const { clienteController } = require('../controllers/clienteController');
 
 clienteRoutes.get('/clientes/', clienteController.selecionaTodosClientes);
 clienteRoutes.post('/clientes', clienteController.novoCliente);
-// clienteRoutes.put('/clientes/:idCliente', clienteController.atualizarCliente);
-// clienteRoutes.delete('/clientes/:idCliente', clienteController.deletarCliente);
+clienteRoutes.put('/clientes/:id_cliente', clienteController.atualizarCliente);
+clienteRoutes.delete('/clientes/:id_cliente', clienteController.deletarCliente);
 
 module.exports = { clienteRoutes };

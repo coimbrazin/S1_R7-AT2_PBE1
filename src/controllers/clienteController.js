@@ -5,10 +5,10 @@ const clienteController = {
 
   selecionaTodosClientes: async (req, res) => {
     try {
-      const { idCliente } = req.query;
+      const { id_cliente } = req.query;
       let resultado;
-      if (idCliente) {
-        resultado = await clienteModel.selectByCliente(idCliente);
+      if (id_cliente) {
+        resultado = await clienteModel.selectByCliente(id_cliente);
         if (resultado.length === 0) {
           return res.status(200).json({ message: 'Não a dados com o ID pesquisado' })
         }
@@ -21,10 +21,7 @@ const clienteController = {
       res.status(200).json({ message: 'Dados da tabela clientes', data: resultado })
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        message: 'Ocorreu um erro no servidor',
-        errorMessage: error.message
-      });
+      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
     }
   },
 
@@ -41,7 +38,7 @@ const clienteController = {
       const { nome, cpf, email, telefone, cep, numero, complemento } = req.body;
 
       if (
-        !nome || !cpf || !email || !telefone || !cep || !numero || !complemento ||
+        !nome || !cpf || !email || !telefone || !cep || !numero ||
 
         typeof nome !== "string" || typeof cpf !== "string" || typeof email !== "string" || typeof cep !== "string" || typeof numero !== "string" || typeof complemento !== "string"
       ) {
@@ -62,7 +59,7 @@ const clienteController = {
       // Verifica Email
       const verificaEmail = await clienteModel.buscarPorEmail(email);
       if (verificaEmail) {
-        return res.status(200).json({ message: 'O E-mail informado já existe no banco de dados.' });
+        return res.status(200).json({ message: 'O e-mail informado já existe no banco de dados.' });
       }
 
       if (!email.includes('@')) {
@@ -73,9 +70,9 @@ const clienteController = {
         return res.status(400).json({ message: 'O campo "telefone" deve ser um array.' });
       }
 
-      const viaCepData = await buscarCep(cep);
+      const dadosCep = await buscarCep(cep);
 
-      if (!viaCepData) {
+      if (!dadosCep) {
         return res.status(400).json({ message: 'CEP inválido ou não encontrado.' });
       }
 
@@ -87,16 +84,102 @@ const clienteController = {
         cep,
         numero,
         complemento,
-        viaCepData
+        dadosCep
       );
 
       res.status(201).json({ message: 'Registro incluido com sucesso', data: resultado });
 
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+    }
+  },
+
+  atualizarCliente: async (req, res) => {
+    try {
+      const id_cliente = Number(req.params.id_cliente);
+      const { nome, cpf, email } = req.body;
+
+      if (isNaN(id_cliente)) {
+        return res.status(400).json({ message: 'ID do cliente inválido.' });
+      }
+
+      if (nome === undefined && cpf === undefined && email === undefined) {
+        return res.status(400).json({ message: 'Envie ao menos um campo para atualizar.' });
+      }
+
+      if (nome !== undefined && !isNaN(nome)) {
+        return res.status(400).json({ message: 'O nome não pode ser um número.' });
+      }
+
+      if (cpf !== undefined) {
+        if (isNaN(cpf) || cpf.length !== 11) {
+          return res.status(400).json({ message: 'O CPF deve conter exatamente 11 números.' });
+        }
+
+        const verificaCpf = await clienteModel.buscarPorCpf(cpf);
+        if (verificaCpf) {
+          return res.status(409).json({ message: 'O CPF informado já está cadastrado em outro cliente.' });
+        }
+      }
+
+      if (email !== undefined && !email.includes('@')) {
+        return res.status(400).json({ message: 'O e-mail enviado é inválido.' });
+      }
+
+      const clienteAtual = await clienteModel.selectByCliente(id_cliente);
+      if (clienteAtual.length === 0) {
+        return res.status(404).json({ message: 'Cliente não encontrado.' });
+      }
+
+      const atual = clienteAtual[0];
+
+      const novoNome = nome ?? atual.nome;
+      const novoCpf = cpf ?? atual.cpf;
+      const novoEmail = email ?? atual.email;
+
+      const resultado = await clienteModel.updateCliente(id_cliente, novoNome, novoCpf, novoEmail);
+
+      if (resultado.affectedRows === 1 && resultado.changedRows === 0) {
+        return res.status(200).json({ message: 'Não há alterações a serem realizadas' });
+      }
+
+      if (resultado.affectedRows === 1 && resultado.changedRows === 1) {
+        return res.status(200).json({ message: 'Registro alterado com sucesso', data: resultado });
+      }
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+    }
+  },
+
+  deletarCliente: async (req, res) => {
+    try {
+      const id_cliente = Number(req.params.id_cliente)
+
+      if (!id_cliente || !Number.isInteger(id_cliente)) {
+        return res.status(400).json({ message: 'Forneça um ID válido' });
+      }
+
+      const clienteSelecionado = await clienteModel.selectByCliente(id_cliente);
+      if (clienteSelecionado.length === 0) {
+        return res.status(400).json({ message: 'Cliente não localizado na base de dados' });
+      }
+
+      const resultadoDelete = await clienteModel.deleteCliente(id_cliente);
+      if (resultadoDelete.affectedRows === 0) {
+        return res.status(200).json({ message: 'Ocorreu um erro ao excluir o cliente' });
+      }
+
+      res.status(400).json({ message: 'Cliente excluído com sucesso', data: resultadoDelete });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
     }
   }
+
 }
 
 module.exports = { clienteController };
