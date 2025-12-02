@@ -1,4 +1,5 @@
-const { enderecosModels } = require("../models/enderecosModel");
+const { enderecosModel } = require("../models/enderecosModel");
+const { buscarCep } = require("../utils/viacep");
 
 const enderecoController = {
     /**
@@ -11,45 +12,78 @@ const enderecoController = {
      * @param {Response} res Objeto da resposta HTTP
      * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta 
      */
+    // selecionarTodos: async (req, res) => {
+    //     try {
+    //         const resultado = await enderecosModel.selectAll();
+    //         if (resultado.length === 0) {
+    //             return res.status(200).json({ message: 'A consulta não retornou resultados' });
+    //         }
+    //         res.status(200).json({ data: resultado });
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+    //     }
+    // },
     selecionarTodos: async (req, res) => {
         try {
-            const resultado = await enderecosModels.selectAll();
+          const { id_cliente } = req.query;
+          let resultado;
+
+          if (id_cliente) {
+            resultado = await enderecosModel.selectByCliente(id_cliente);
+      
             if (resultado.length === 0) {
-                return res.status(200).json({ message: 'A consulta não retornou resultados' });
+              return res.status(200).json({ 
+                message: 'Não há endereços para o ID informado' 
+              });
             }
-            res.status(200).json({ data: resultado });
+      
+            return res.status(200).json({
+              message: 'Endereços do cliente',
+              data: resultado
+            });
+          }
+          resultado = await enderecosModel.selectAll();
+      
+          if (resultado.length === 0) {
+            return res.status(200).json({ 
+              message: 'A consulta não retornou resultados' 
+            });
+          }
+      
+          res.status(200).json({
+            message: 'Todos os endereços',
+            data: resultado
+          });
+      
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+          console.error(error);
+          res.status(500).json({
+            message: 'Ocorreu um erro no servidor',
+            errorMessage: error.message
+          });
         }
-    },
-    //Criação de clientes
+      },
+    //CriaçãO De Endereços
     incluirEndereco: async (req, res) => {
         try {
-            const { idCliente, cep, numero, complemento} = req.body;
-            if (!idCliente ||!cep || !numero || !complemento) {
+            const { id_cliente, cep, numero, complemento } = req.body;
+            if (!id_cliente || !cep || !numero || !complemento) {
                 return res.status(400).json({ message: 'Verifique os dados enviado e tente novamente' });
             }
-            const url = `https://viacep.com.br/ws/${cep}/json/`
-            const response = await fetch(url)
-            const dadosCep = await response.json();
-            if (!dadosCep.error) {
-                return res.status(400).json({ message: 'CEP inválido ou não encontrado' })
-            }
+
+            const dadosCep = await buscarCep(cep);
             console.log("Endereço:", dadosCep);
-            const resultado = await enderecosModels.InsertEndereco({
-                idCliente,
+            const resultado = await enderecosModel.insertEndereco (
+                id_cliente,
                 cep,
                 numero,
                 complemento,
-                logradouro: dadosCep.logradouro,
-                bairro: dadosCep.bairro,
-                localidade: dadosCep.localidade,
-                uf: dadosCep.uf
-            });
-    
+                dadosCep
+            );
+
             return res.status(201).json({ message: 'Endereço incluído com sucesso', data: resultado });
-    
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({
@@ -57,65 +91,100 @@ const enderecoController = {
                 errorMessage: error.message
             });
         }
-    }
-    // Alteração de clientes (se for alterar o CPF, verifique se o novo já existe e retorne a mesma mensagem da criação de clientes);
-    alteraCliente: async (req, res) => {
-        try {
-            const idCliente = Number(req.params.idCliente);
-            const { descri  cao, cpf } = req.body;
-
-            if (!idCliente || (!descricao && !cpf) || isNaN(cpf) || typeof idCliente != 'number') {
-                return res.status(400).json({ message: 'Verifiqueee os dados enviado e tente novamente' });
-            }
-
-            const clienteAtual = await produtoModel.selectById(idCliente);
-            if (clienteAtual.length === 0) {
-                return res.status(200).json({ message: 'Client não foi localizado não localizado' });
-            }
-
-            const novaDescricao = descricao ?? clienteAtual[0].nome_cliente;
-            const novoCpf = cpf ?? clienteAtual[0].cpf_cliente;
-            console.log(novaDescricao, novoCpf);
-
-            const resultUpdate = await clienteModels.update(idCliente, novaDescricao, novoCpf);
-
-            if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 0) {
-                return res.status(200).json({ message: 'Não há alterações a serem realizadas' });
-            }
-            if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 1) {
-                return res.status(200).json({ message: 'O registro foi alterado com sucesso' });
-            }
-            // res.json({message:'teste'})
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message })
-        }
     },
-    // Deleção de clientes;
-    deleteCliente: async (req, res) => {
+    // Alteração de Endereços
+    alterarEndereco: async (req, res) => {
         try {
-            const idCliente = Number(req.params.idCliente);
+          const id_cliente = Number(req.params.id_cliente);
+          const { cep, numero, complemento } = req.body;
+      
+          if (isNaN(id_cliente)) {
+            return res.status(400).json({ message: 'ID do cliente inválido' });
+          }
+      
+          if (!cep && !numero && !complemento) {
+            return res.status(400).json({ message: 'Envie ao menos um campo para atualizar' });
+          }
+      
+          // Busca o enderço do cliente atual
+          const enderecoAtual = await enderecosModel.selectByCliente(id_cliente);
+      
+          if (enderecoAtual.length === 0) {
+            return res.status(404).json({ message: 'Endereço não encontrado para este cliente' });
+          }
+      
+          let dadosCep = {
+            uf: enderecoAtual[0].uf,
+            localidade: enderecoAtual[0].cidade,
+            bairro: enderecoAtual[0].bairro,
+            logradouro: enderecoAtual[0].logradouro
+          };
+      
+          if (cep) {
+            const busca = await buscarCep(cep);
+            if (!busca.logradouro) {
+              return res.status(400).json({ message: 'CEP inválido' });
+            }
+            dadosCep = busca;
+          }
+      
+          const novoCep = cep ?? enderecoAtual[0].cep;
+          const novoNumero = numero ?? enderecoAtual[0].numero;
+          const novoComplemento = complemento ?? enderecoAtual[0].complemento;
+    
+          const resultado = await enderecosModel.updateEndereco(
+            id_cliente,
+            novoCep,
+            dadosCep.uf,
+            dadosCep.localidade,
+            dadosCep.bairro,
+            dadosCep.logradouro,
+            novoNumero,
+            novoComplemento
+          );
+      
+          if (resultado.affectedRows === 1 && resultado.changedRows === 0) {
+            return res.status(200).json({ message: 'Nenhuma alteração realizada' });
+          }
+      
+          if (resultado.affectedRows === 1 && resultado.changedRows === 1) {
+            return res.status(200).json({ message: 'Endereço atualizado com sucesso' });
+          }
+      
+          return res.status(500).json({ message: 'Erro inesperado ao atualizar o endereço' });
+      
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({
+            message: 'Erro interno no servidor',
+            errorMessage: error.message
+          });
+        }
+      },
+    // Deleção de clientes;
+    deleteEndereco: async (req, res) => {
+        try {
+            const id_cliente = Number(req.params.id_cliente);
 
-            if (!idCliente || !Number.isInteger(idCliente)) {
-                return res.status(400).json({ message: 'Forneça um identificador válido' })
+            const enderecoSelecionado = await enderecosModel.selectEnderecoPorCliente(id_cliente);
+    
+            if (!enderecoSelecionado || enderecoSelecionado.length === 0) {
+                return res.status(404).json({ message: 'Endereço não encontrado' });
             }
-            const clienteSelecionado = await clienteModels.delete(idCliente);
-            if (clienteSelecionado.length === 0) {
-                return res.status(200).json({ message: 'Cliente ñ localizado' });
-            }
-            const resultadoDelete = await clienteModels.delete(idCliente);
-            if (resultadoDelete.affectedRows === 1) {
-                return res.status(200).json({ message: 'Erro ao excluir cliente' })
-            }
-            res.status(200).json({
-                message: 'CLiente excluído com sucesso',
+            const resultadoDelete = await enderecosModel.deleteEnderecoCliente(id_cliente);
+    
+            return res.status(200).json({
+                message: 'Endereço excluído com sucesso.',
                 data: resultadoDelete
             });
+    
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Ocorreu erro no server', errorMessage: error.message })
+            res.status(500).json({
+                message: 'Erro interno no servidor.',
+                errorMessage: error.message
+            });
         }
-    }
-
+    }    
 }
 module.exports = enderecoController;

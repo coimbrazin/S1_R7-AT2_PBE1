@@ -32,30 +32,41 @@ const enderecosModel = {
     const [rows] = await pool.query(sql);
     return rows;
   },
-  insertEndereco: async (pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
-    const connection = await pool.getConnection();
 
-    try {
-      await connection.beginTransaction();
+  selectByCliente: async (id_cliente) => {
+    const sql = 'SELECT * FROM enderecos WHERE id_cliente = ?;';
+    const [rows] = await pool.query(sql, [id_cliente]);
+    return rows;
+  },
 
-      const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?);';
-      const valuesEndereco = [pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento];
-      const [rowsEndereco] = await pool.query(sqlEndereco, valuesEndereco);
+  insertEndereco: async (pIdCliente, pCep, pNumero, pComplemento, pDadosEndereco) => {
+    const sqlEndereco = 'INSERT INTO enderecos (id_cliente, cep, uf, cidade, bairro, logradouro, numero, complemento) VALUES (?,?,?,?,?,?,?,?);';
+    const valuesEndereco = [
+      pIdCliente,
+      pCep,
+      pDadosEndereco.uf,
+      pDadosEndereco.localidade,
+      pDadosEndereco.bairro,
+      pDadosEndereco.logradouro,
+      pNumero,
+      pComplemento
+    ];
 
-      connection.commit();
-      return rowsEndereco;
-    } catch (error) {
-      connection.rollback()
-    }
-
+    const [rowsEndereco] = await pool.query(sqlEndereco, valuesEndereco);
   },
   updateEndereco: async (pIdCliente, pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento) => {
-    const sql = 'UPDATE endereco cep=?, uf=?, cidade=?, bairro=?, logradouro=?, numero=?, complemento=? WHERE id_cliente=?;';
+    const sql = 'UPDATE enderecos SET cep=?, uf=?, cidade=?, bairro=?, logradouro=?, numero=?, complemento=? WHERE id_cliente=?;';
     const values = [pCep, pUf, pCidade, pBairro, pLogradouro, pNumero, pComplemento, pIdCliente]
     const [rows] = await pool.query(sql, values);
+    return rows;
   },
+  selectEnderecoPorCliente: async (pIdCliente) => {
+    const sql = 'SELECT * FROM enderecos WHERE id_cliente = ?;';
+    const [rows] = await pool.query(sql, [pIdCliente]);
+    return rows;
+},
   deleteEnderecoCliente: async (pIdCliente) => {
-    const sql = 'DELETE FROM endereco WHERE id_cliente = ?;';
+    const sql = 'DELETE FROM enderecos WHERE id_cliente = ?;';
     const values = [pIdCliente];
     const [rows] = await pool.query(sql, values);
     return rows;
