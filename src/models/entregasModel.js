@@ -9,7 +9,7 @@ const entregasModel = {
   },
 
   selectByEntregas: async (pId) => {
-    const sql = 'SELECT * FROM entregas WHERE id_cliente=?;';
+    const sql = 'SELECT * FROM entregas WHERE id_entrega=?;';
     const values = [pId];
     const [rows] = await pool.query(sql, values);
     return rows;
