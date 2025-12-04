@@ -12,18 +12,6 @@ const enderecoController = {
      * @param {Response} res Objeto da resposta HTTP
      * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta 
      */
-    // selecionarTodos: async (req, res) => {
-    //     try {
-    //         const resultado = await enderecosModel.selectAll();
-    //         if (resultado.length === 0) {
-    //             return res.status(200).json({ message: 'A consulta não retornou resultados' });
-    //         }
-    //         res.status(200).json({ data: resultado });
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
-    //     }
-    // },
     selecionarTodos: async (req, res) => {
         try {
           const { id_cliente } = req.query;
@@ -34,7 +22,7 @@ const enderecoController = {
       
             if (resultado.length === 0) {
               return res.status(200).json({ 
-                message: 'Não há endereços para o ID informado' 
+                message: 'Não tem endereço para o ID informado' 
               });
             }
       
@@ -64,7 +52,6 @@ const enderecoController = {
           });
         }
       },
-    //CriaçãO De Endereços
     incluirEndereco: async (req, res) => {
         try {
             const { id_cliente, cep, numero, complemento } = req.body;
@@ -92,7 +79,6 @@ const enderecoController = {
             });
         }
     },
-    // Alteração de Endereços
     alterarEndereco: async (req, res) => {
         try {
           const id_cliente = Number(req.params.id_cliente);
@@ -105,8 +91,6 @@ const enderecoController = {
           if (!cep && !numero && !complemento) {
             return res.status(400).json({ message: 'Envie ao menos um campo para atualizar' });
           }
-      
-          // Busca o enderço do cliente atual
           const enderecoAtual = await enderecosModel.selectByCliente(id_cliente);
       
           if (enderecoAtual.length === 0) {
@@ -161,12 +145,11 @@ const enderecoController = {
           });
         }
       },
-    // Deleção de clientes;
     deleteEndereco: async (req, res) => {
         try {
             const id_cliente = Number(req.params.id_cliente);
 
-            const enderecoSelecionado = await enderecosModel.selectEnderecoPorCliente(id_cliente);
+            const enderecoSelecionado = await enderecosModel.selectByCliente(id_cliente);
     
             if (!enderecoSelecionado || enderecoSelecionado.length === 0) {
                 return res.status(404).json({ message: 'Endereço não encontrado' });

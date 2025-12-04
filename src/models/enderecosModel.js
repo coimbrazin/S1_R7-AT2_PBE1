@@ -60,11 +60,6 @@ const enderecosModel = {
     const [rows] = await pool.query(sql, values);
     return rows;
   },
-  selectEnderecoPorCliente: async (pIdCliente) => {
-    const sql = 'SELECT * FROM enderecos WHERE id_cliente = ?;';
-    const [rows] = await pool.query(sql, [pIdCliente]);
-    return rows;
-},
   deleteEnderecoCliente: async (pIdCliente) => {
     const sql = 'DELETE FROM enderecos WHERE id_cliente = ?;';
     const values = [pIdCliente];
