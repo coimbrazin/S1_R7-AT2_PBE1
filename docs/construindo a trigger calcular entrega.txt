@@ -1,0 +1,37 @@
+dps de inserir as informações na tabela pedidos a trigger faz
+
+criar variaveis para salvar os calculos
+
+v_valor_distancia
+v_valor_peso
+v_valor_base
+v_acrescimo
+v_desconto
+v_taxa_extra
+v_valor_final
+
+calcular o valor da distancia
+distancia é 2 reais por km e
+km * 2
+
+calcular o valor do peso
+2 reais por kg
+kg * 2
+
+calcular valor base
+valor da distancia + valor do peso
+
+calcular acrescimo
+se a entrega for urgente ela tem acrescimo de 20% em cima do valor base
+então eu tenho que fazer uma condição se o campo "tipo_de_entrega" estiver como "urgente"
+v_valor_base * 0.20 e salvo isso na v_acrescimo e dps faço a soma e salvo em v_valor_final
+
+calcular desconto
+caso o valor da variavel valor final for maior que 500 devo aplicar um desconto de 10% em cima da v_valor_final
+então eu pego v_valor_final * 0.10 armazeno esse valor na v_desconto e dps subtraio o valor da v_desconto da v_valor_final
+
+calcular taxa de peso
+se o peso for maior que 50kg adicionar uma taxa fixa de 15 ao valor final
+criar uma condição se peso for maior que 50kg adicionar a variavel v_taxa_extra o valor de 15 caso não for deixar o valor em zero
+e dps somar v_valor_final + v_taxa_entrega
+

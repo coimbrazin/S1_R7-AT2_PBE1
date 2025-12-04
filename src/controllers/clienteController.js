@@ -3,6 +3,16 @@ const { buscarCep } = require('../utils/viacep');
 
 const clienteController = {
 
+  /**
+   * Seleciona todos os clientes ou um cliente específico por ID.
+   * Rota GET /clientes/
+   * 
+   * @async
+   * @function selecionaTodosClientes
+   * @param {Request} req - Objeto da requisição HTTP.
+   * @param {Response} res - Objeto da resposta HTTP.
+   * @returns {Promise<Response>} Retorna JSON com todos os clientes ou um cliente específico.
+   */
   selecionaTodosClientes: async (req, res) => {
     try {
       const { id_cliente } = req.query;
@@ -26,12 +36,14 @@ const clienteController = {
   },
 
   /**
-   * Insere um novo cliente no banco de dados
-   * Rota GET /clientes/
+   * Insere um novo cliente no banco de dados.
+   * Rota POST /clientes/
+   * 
    * @async
-   * @param {Request} req Objeto da requisição HTTP
-   * @param {Response} res Objeto da resposta HTTP
-   * @returns {Promise<Array<Object} Objeto contendo o resultado da consulta
+   * @function novoCliente
+   * @param {Request} req - Objeto da requisição HTTP contendo os dados do cliente.
+   * @param {Response} res - Objeto da resposta HTTP.
+   * @returns {Promise<Response>} Retorna JSON com o resultado da inserção.
    */
   novoCliente: async (req, res) => {
     try {
@@ -44,7 +56,6 @@ const clienteController = {
       ) {
         return res.status(400).json({ message: 'Verifique os dados enviados e tente novamente' });
       }
-
 
       // Verifica CPF
       if (isNaN(cpf) || cpf.length != 11) {
@@ -95,6 +106,16 @@ const clienteController = {
     }
   },
 
+  /**
+   * Atualiza os dados de um cliente existente.
+   * Rota PUT /clientes/:id_cliente
+   * 
+   * @async
+   * @function atualizarCliente
+   * @param {Request} req - Objeto da requisição HTTP contendo os novos dados do cliente.
+   * @param {Response} res - Objeto da resposta HTTP.
+   * @returns {Promise<Response>} Retorna JSON com o resultado da atualização.
+   */
   atualizarCliente: async (req, res) => {
     try {
       const id_cliente = Number(req.params.id_cliente);
@@ -154,6 +175,16 @@ const clienteController = {
     }
   },
 
+  /**
+   * Deleta um cliente do banco de dados.
+   * Rota DELETE /clientes/:id_cliente
+   * 
+   * @async
+   * @function deletarCliente
+   * @param {Request} req - Objeto da requisição HTTP contendo o ID do cliente.
+   * @param {Response} res - Objeto da resposta HTTP.
+   * @returns {Promise<Response>} Retorna mensagem confirmando a exclusão.
+   */
   deletarCliente: async (req, res) => {
     try {
       const id_cliente = Number(req.params.id_cliente)
