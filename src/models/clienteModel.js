@@ -48,7 +48,7 @@ const clienteModel = {
    * @param {string} pDadosEndereco.cidade Cidade.
    * @param {string} pDadosEndereco.bairro Bairro.
    * @param {string} pDadosEndereco.pLogradouro Logradouro.
-   * @returns {Promise<Object>} Retorna objetos contendo os resultados das queries.
+   * @returns {Promise<Object>} Retorna objetos contendo os resultados.
    * @example
    * const result = await clienteModel.insertCliente(nome, cpf, email, telefones, cep, numero, complemento, viaCepData);
    */
@@ -98,7 +98,7 @@ const clienteModel = {
    * @async
    * @function buscarPorCpf
    * @param {string} pCpf CPF do cliente.
-   * @returns {Promise<Object|null>} Retorna o cliente encontrado ou null.
+   * @returns {Promise<Object|null>} Retorna o cliente encontrado ou vazio.
    * @example
    * const cliente = await clienteModel.buscarPorCpf("12345678900");
    */
@@ -114,7 +114,7 @@ const clienteModel = {
    * @async
    * @function buscarPorEmail
    * @param {string} pEmail Email do cliente.
-   * @returns {Promise<Object|null>} Retorna o cliente encontrado ou null.
+   * @returns {Promise<Object|null>} Retorna o cliente encontrado ou vazio.
    * @example
    * const cliente = await clienteModel.buscarPorEmail("teste@email.com");
    */
@@ -133,7 +133,7 @@ const clienteModel = {
    * @param {string} pNome Nome atualizado.
    * @param {string} pCpf CPF atualizado.
    * @param {string} pEmail Email atualizado.
-   * @returns {Promise<Object>} Retorna o resultado da query de atualização.
+   * @returns {Promise<Object>} Retorna o resultado informações da atualização do cliente.
    * @example
    * const result = await clienteModel.updateCliente(3, "João", "123...", "email@gmail.com");
    */
@@ -149,7 +149,7 @@ const clienteModel = {
    * @async
    * @function deleteCliente
    * @param {number} pId ID do cliente que será deletado.
-   * @returns {Promise<Object>} Retorna o resultado da query de deleção.
+   * @returns {Promise<Object>} Retorna o resultado as informações do delete.
    * @example
    * const result = await clienteModel.deleteCliente(2);
    */

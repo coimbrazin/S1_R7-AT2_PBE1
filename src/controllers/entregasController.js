@@ -4,7 +4,7 @@ const entregasController = {
 
   /**
    * Seleciona todas as entregas ou uma entrega específica pelo ID.
-   * Método GET — /entregas ou /entregas?id_entrega=1
+   * Rota GET — /entregas ou /entregas?id_entrega=1
    *
    * @async
    * @function selecionaTodasEntregas
@@ -16,9 +16,6 @@ const entregasController = {
    * // Buscar todas as entregas
    * GET /entregas
    *
-   * @example
-   * // Buscar entrega pelo ID
-   * GET /entregas?id_entrega=3
    */
   selecionaTodasEntregas: async (req, res) => {
     try {
@@ -52,7 +49,7 @@ const entregasController = {
 
   /**
    * Atualiza os dados de uma entrega existente.
-   * Método PUT — /entregas/:id_entrega
+   * Rota PUT — /entregas/:id_entrega
    *
    * @async
    * @function atualizarEntrega
@@ -136,7 +133,7 @@ const entregasController = {
 
   /**
    * Deleta uma entrega pelo ID.
-   * Método DELETE — /entregas/:id_entrega
+   * Rota DELETE — /entregas/:id_entrega
    *
    * @async
    * @function deletarEntrega

@@ -7,7 +7,7 @@ const entregasModel = {
    * 
    * @async
    * @function selectAllEntregas
-   * @returns {Promise<Array<Object>>} Retorna uma lista com todas as entregas.
+   * @returns {Promise<Object>} Retorna uma lista com todas as entregas.
    * @example
    * const entregas = await entregasModel.selectAllEntregas();
    */
@@ -23,7 +23,7 @@ const entregasModel = {
    * @async
    * @function selectByEntregas
    * @param {number} pId - ID da entrega a ser buscada.
-   * @returns {Promise<Array<Object>>} Retorna um array contendo a entrega encontrada (ou vazio caso não exista).
+   * @returns {Promise<Object>} Retorna um objeto contendo a entrega encontrada ou vazio caso não exista.
    * @example
    * const entregas = await entregasModel.selectByEntregas(2);
    */
@@ -75,7 +75,7 @@ const entregasModel = {
    * @async
    * @function deleteEntregas
    * @param {number} pId - ID da entrega que será deletada.
-   * @returns {Promise<void>} Não retorna nada, apenas executa o delete.
+   * @returns {Promise<void>} Retorna o resultado as informações do delete.
    * @example
    * const entregas = await entregasModel.deleteEntregas(2);
    */
