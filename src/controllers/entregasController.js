@@ -1,28 +1,73 @@
 const { entregasModel } = require('../models/entregasModel');
 
 const entregasController = {
+
+  /**
+   * Seleciona todas as entregas ou uma entrega específica pelo ID.
+   * Método GET — /entregas ou /entregas?id_entrega=1
+   *
+   * @async
+   * @function selecionaTodasEntregas
+   * @param {Request} req - Objeto de requisição contendo opcionalmente o ID da entrega em req.query.
+   * @param {Response} res - Objeto de resposta utilizado para retornar os dados ou mensagens ao cliente.
+   * @returns {Promise<Response>} Retorna uma lista de entregas ou uma entrega específica.
+   *
+   * @example
+   * // Buscar todas as entregas
+   * GET /entregas
+   *
+   * @example
+   * // Buscar entrega pelo ID
+   * GET /entregas?id_entrega=3
+   */
   selecionaTodasEntregas: async (req, res) => {
     try {
       const { id_entrega } = req.query;
       let resultado;
+
       if (id_entrega) {
         resultado = await entregasModel.selectByEntregas(id_entrega);
         if (resultado.length === 0) {
-          return res.status(200).json({ message: 'Não a dados com o ID pesquisado' })
+          return res.status(200).json({ message: 'Não a dados com o ID pesquisado' });
         }
-        return res.status(200).json({ message: 'Dados da tabela entregas', data: resultado })
+        return res.status(200).json({ message: 'Dados da tabela entregas', data: resultado });
       }
+
       resultado = await entregasModel.selectAllEntregas();
+
       if (resultado.length === 0) {
         return res.status(200).json({ message: 'A consulta não retornou resultados' });
       }
-      res.status(200).json({ message: 'Dados da tabela entregas', data: resultado })
+
+      return res.status(200).json({ message: 'Dados da tabela entregas', data: resultado });
+
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+      return res.status(500).json({
+        message: 'Ocorreu um erro no servidor',
+        errorMessage: error.message
+      });
     }
   },
 
+  /**
+   * Atualiza os dados de uma entrega existente.
+   * Método PUT — /entregas/:id_entrega
+   *
+   * @async
+   * @function atualizarEntrega
+   * @param {Request} req - Objeto de requisição contendo o ID em req.params e os novos dados no corpo.
+   * @param {Response} res - Objeto de resposta utilizado para retornar mensagens e status ao cliente.
+   * @returns {Promise<Response>} Retorna o status da atualização.
+   *
+   * @example
+   * PUT /entregas/5
+   * {
+   *   "valor_da_distancia": 40,
+   *   "valor_do_peso": 50,
+   *   "acrescimo": 10
+   * }
+   */
   atualizarEntrega: async (req, res) => {
     try {
       const id_entrega = Number(req.params.id_entrega);
@@ -41,6 +86,7 @@ const entregasController = {
       }
 
       const entrega = await entregasModel.selectByEntregas(id_entrega);
+
       if (entrega.length === 0) {
         return res.status(404).json({ message: 'Entrega não encontrada.' });
       }
@@ -73,15 +119,34 @@ const entregasController = {
       }
 
       if (resultado.affectedRows === 1 && resultado.changedRows === 1) {
-        return res.status(200).json({ message: 'Registro alterado com sucesso', data: resultado });
+        return res.status(200).json({
+          message: 'Registro alterado com sucesso',
+          data: resultado
+        });
       }
 
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
+      return res.status(500).json({
+        message: 'Ocorreu um erro no servidor',
+        errorMessage: error.message
+      });
     }
   },
 
+  /**
+   * Deleta uma entrega pelo ID.
+   * Método DELETE — /entregas/:id_entrega
+   *
+   * @async
+   * @function deletarEntrega
+   * @param {Request} req - Objeto de requisição contendo o ID da entrega em req.params.
+   * @param {Response} res - Objeto utilizado para enviar o status da operação.
+   * @returns {Promise<Response>} Retorna mensagem de sucesso ou erro caso o ID não exista.
+   *
+   * @example
+   * DELETE /entregas/7
+   */
   deletarEntrega: async (req, res) => {
     try {
       const id_entrega = Number(req.params.id_entrega);
@@ -102,9 +167,12 @@ const entregasController = {
 
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor', errorMessage: error.message });
+      return res.status(500).json({
+        message: 'Erro interno do servidor',
+        errorMessage: error.message
+      });
     }
   }
-}
+};
 
 module.exports = { entregasController };

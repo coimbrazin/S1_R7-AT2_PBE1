@@ -210,7 +210,6 @@ const clienteController = {
       return res.status(500).json({ message: 'Ocorreu um erro no servidor', errorMessage: error.message });
     }
   }
-
 }
 
 module.exports = { clienteController };
