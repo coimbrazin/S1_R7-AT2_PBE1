@@ -16,13 +16,13 @@ const entregasModel = {
   },
 
   updateEntregas: async (pIdPedido, pValorDistancia, pValorPeso, pAcrescimo, pDesconto, pTaxa, pValorFinal, pStatus) => {
-    const sql = 'UPDATE entregas SET valor_da_distancia=?, valor_do_peso=?, acrescimo=?, desconto=?, taxa_extra=?, valor_final=?, status_entrega=? WHERE id_pedido=?;';
+    const sql = 'UPDATE entregas SET valor_da_distancia=?, valor_do_peso=?, acrescimo=?, desconto=?, taxa_extra=?, valor_final=?, status_entrega=? WHERE id_entrega=?;';
     const values = [pValorDistancia, pValorPeso, pAcrescimo, pDesconto, pTaxa, pValorFinal, pStatus, pIdPedido];
     const [rows] = await pool.query(sql, values);
     return rows;
   },
 
-  deleteCliente: async (pId) => {
+  deleteEntregas: async (pId) => {
     const sql = 'DELETE FROM entregas WHERE id_entrega=?;';
     const values = [pId]
     const [rows] = await pool.query(sql, values);
